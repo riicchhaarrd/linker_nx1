@@ -28,15 +28,22 @@ jobs:
         gcc -std=c99 -O2 -Wall -Wextra -o linker linker.c miniz.c
         tar -czf ${{ matrix.artifact }} linker
 
-    - name: Setup MSVC
+    - name: Setup MinGW
       if: matrix.name == 'windows'
-      uses: ilammy/msvc-dev-cmd@v1
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: MINGW64
+        update: false
+        install: >-
+          mingw-w64-x86_64-gcc
+          zip
 
     - name: Build for Windows
       if: matrix.name == 'windows'
+      shell: msys2 {0}
       run: |
-        cl /O2 /W3 /Fe:linker.exe linker.c miniz.c
-        7z a ${{ matrix.artifact }} linker.exe
+        gcc -std=c99 -O2 -Wall -Wextra -o linker.exe linker.c miniz.c
+        zip ${{ matrix.artifact }} linker.exe
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
