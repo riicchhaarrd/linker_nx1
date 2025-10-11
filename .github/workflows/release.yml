@@ -1,0 +1,45 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Build for Linux
+      run: |
+        gcc -std=c99 -O2 -Wall -Wextra -o linker linker.c miniz.c
+        tar -czf linker-linux-x86_64.tar.gz linker
+
+    - name: Setup MinGW for Windows cross-compilation
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y mingw-w64
+
+    - name: Build for Windows
+      run: |
+        i686-w64-mingw32-gcc -static -static-libgcc -static-libstdc++ -O2 -Wall -Wextra -o linker.exe linker.c miniz.c
+        zip linker-windows-i686.zip linker.exe
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          linker-linux-x86_64.tar.gz
+          linker-windows-i686.zip
+        body: |
+          ## Binaries
+          - `linker-linux-x86_64.tar.gz` - Linux x86_64 binary
+          - `linker-windows-i686.zip` - Windows i686 (32-bit) binary
+
+          Built automatically from tag ${{ github.ref_name }}
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
