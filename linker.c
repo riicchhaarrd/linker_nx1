@@ -180,7 +180,7 @@ void compress_memory(const unsigned char *data, size_t dataLen, unsigned char **
 
 char *read_file_to_memory(const char *filename, size_t *out_size)
 {
-	FILE *file = fopen(filename, "r");
+	FILE *file = fopen(filename, "rb");
 	if(!file)
 		return NULL;
 
